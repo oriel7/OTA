@@ -1,3 +1,4 @@
+using MassTransit;
 using OT.Assessment.Core.Services.Services;
 using OT.Assessment.Infrastructure.Service.Services;
 using Serilog;
@@ -6,17 +7,11 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-});
+SetupSwagger(builder);
 
-builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
-builder.Services.AddScoped<IPlayerService, PlayerService>();
+SetServiceDependencies(builder);
+
+SetMassTransit(builder);
 
 //Add support to logging with SERILOG
 builder.Host.UseSerilog((context, configuration) =>
@@ -46,3 +41,28 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void SetupSwagger(WebApplicationBuilder builder)
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    });
+}
+
+static void SetServiceDependencies(WebApplicationBuilder builder)
+{
+    builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
+    builder.Services.AddScoped<IPlayerService, PlayerService>();
+}
+
+static void SetMassTransit(WebApplicationBuilder builder)
+{
+    builder.Services.AddMassTransit(x =>
+    {
+        x.UsingRabbitMq();
+    });
+}
