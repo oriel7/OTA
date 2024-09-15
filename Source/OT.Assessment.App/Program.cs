@@ -1,7 +1,6 @@
 using MassTransit;
 using OT.Assessment.Core.Domain.Constants;
-using OT.Assessment.Core.Services.Services;
-using OT.Assessment.Infrastructure.Service.Services;
+using OT.Assessment.Core.Domain.DTO;
 using Serilog;
 using System.Reflection;
 
@@ -9,8 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 SetupSwagger(builder);
-
-SetServiceDependencies(builder);
 
 SetMassTransit(builder);
 
@@ -54,16 +51,13 @@ static void SetupSwagger(WebApplicationBuilder builder)
     });
 }
 
-static void SetServiceDependencies(WebApplicationBuilder builder)
-{
-    builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
-    builder.Services.AddScoped<IPlayerService, PlayerService>();
-}
-
 static void SetMassTransit(WebApplicationBuilder builder)
 {
     builder.Services.AddMassTransit(busConfigurator =>
     {
+        busConfigurator.AddRequestClient<PlayerData>();
+        busConfigurator.AddRequestClient<TopSpenderData>();
+
         busConfigurator.UsingRabbitMq((context, configurator) =>
         {
             //configurator.Host(new Uri(builder.Configuration["MessageBroker.Host"]!), h =>

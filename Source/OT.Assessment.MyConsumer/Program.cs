@@ -2,10 +2,17 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using OT.Assessment.Core.Domain.Constants;
+using OT.Assessment.Core.Services.Services;
+using OT.Assessment.Infrastructure.Service.Services;
 using OT.Assessment.MyConsumer.Consumers;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+SetServiceDependencies(builder);
 
 SetMassTransit(builder);
 
@@ -20,11 +27,19 @@ app.UseSerilogRequestLogging();
 
 app.Run();
 
+static void SetServiceDependencies(WebApplicationBuilder builder)
+{
+    builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
+    builder.Services.AddScoped<IPlayerService, PlayerService>();
+}
+
 static void SetMassTransit(WebApplicationBuilder builder)
 {
     builder.Services.AddMassTransit(busConfigurator =>
     {
-        busConfigurator.AddConsumer<CasinoWagerConsumer>();
+        busConfigurator.AddConsumer<CreateCasinoWagerConsumer>();
+        busConfigurator.AddConsumer<GetCasinoWagerConsumer>();
+        busConfigurator.AddConsumer<GetTopSpenderConsumer>();
 
         busConfigurator.UsingRabbitMq((context, configurator) =>
         {
@@ -42,10 +57,18 @@ static void SetMassTransit(WebApplicationBuilder builder)
 
             configurator.ReceiveEndpoint("create-casinowager", e =>
             {
-                e.Consumer<CasinoWagerConsumer>(context);
+                e.Consumer<CreateCasinoWagerConsumer>(context);
             });
 
-            configurator.ConfigureEndpoints(context);
+            configurator.ReceiveEndpoint("get-casinowager", e =>
+            {
+                e.Consumer<GetCasinoWagerConsumer>(context);
+            });
+
+            configurator.ReceiveEndpoint("get-top-spender", e =>
+            {
+                e.Consumer<GetTopSpenderConsumer>(context);
+            });
         });
     });
 }
@@ -76,7 +99,7 @@ static void SetMassTransit(WebApplicationBuilder builder)
 //        configuration.ReadFrom.Configuration(context.Configuration))
 //    .Build();
 
-//var logger = host.Services.GetRequiredService<ILogger<Program>>();
+//var logger = builder.Host.S host.Services.GetRequiredService<ILogger<Program>>();
 //logger.LogInformation("Application started {time:yyyy-MM-dd HH:mm:ss}", DateTime.Now);
 
 //await host.RunAsync();

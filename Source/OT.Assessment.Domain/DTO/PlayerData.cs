@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OT.Assessment.Core.Domain
+namespace OT.Assessment.Core.Domain.DTO
 {
-    public interface ICasinoWagerCreated
+    public class PlayerData
     {
-        string WagerId { get; set; }
+        public int PlayerId { get; set; }
     }
 }
