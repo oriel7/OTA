@@ -1,4 +1,5 @@
 using MassTransit;
+using OT.Assessment.Core.Domain.Constants;
 using OT.Assessment.Core.Services.Services;
 using OT.Assessment.Infrastructure.Service.Services;
 using Serilog;
@@ -61,8 +62,23 @@ static void SetServiceDependencies(WebApplicationBuilder builder)
 
 static void SetMassTransit(WebApplicationBuilder builder)
 {
-    builder.Services.AddMassTransit(x =>
+    builder.Services.AddMassTransit(busConfigurator =>
     {
-        x.UsingRabbitMq();
+        busConfigurator.UsingRabbitMq((context, configurator) =>
+        {
+            //configurator.Host(new Uri(builder.Configuration["MessageBroker.Host"]!), h =>
+            //{
+            //    h.Username(builder.Configuration["MessageBroker.Username"]);
+            //    h.Password(builder.Configuration["MessageBroker.Password"]);
+            //});
+
+            configurator.Host(new Uri(RabbitMqConstants.RabbitMqRootUri), h =>
+            {
+                h.Username(RabbitMqConstants.UserName);
+                h.Password(RabbitMqConstants.Password);
+            });
+
+            configurator.ConfigureEndpoints(context);
+        });
     });
 }

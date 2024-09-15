@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Mvc;
+using OT.Assessment.Core.Domain.Constants;
 using OT.Assessment.Core.Domain.Models;
 using OT.Assessment.Core.Services.Services;
 namespace OT.Assessment.App.Controllers
@@ -11,11 +13,15 @@ namespace OT.Assessment.App.Controllers
         private readonly ILogger<PlayerController> _logger;
         private readonly ICasinoWagerService _casinoWagerService;
         private readonly IPlayerService _playerService;
+        private readonly IBus _bus;
 
-        public PlayerController(ICasinoWagerService casinoWagerService, IPlayerService playerService, ILogger<PlayerController> logger)
+
+        public PlayerController(ICasinoWagerService casinoWagerService, IPlayerService playerService,
+            IBus bus, ILogger<PlayerController> logger)
         {
             _casinoWagerService = casinoWagerService;
             _playerService = playerService; 
+            _bus = bus; 
             _logger = logger;
         }
 
@@ -23,7 +29,7 @@ namespace OT.Assessment.App.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult> CasinoWager(CasinoWager casinoWager)
         {
             if (casinoWager == null)
@@ -33,9 +39,10 @@ namespace OT.Assessment.App.Controllers
 
             _logger.LogInformation("Request received to create a wager");
 
-            await _casinoWagerService.CreateCasinoWagerAsync(casinoWager);
+            var endPoint = await _bus.GetSendEndpoint(new Uri(RabbitMqConstants.RabbitMqCreateCasinoWagerQueueUri));
+            await endPoint.Send(casinoWager);
 
-            return NoContent();
+            return Ok("Casino wager created successfully");
         }
 
         //GET api/player/{playerId}/wagers
@@ -51,7 +58,7 @@ namespace OT.Assessment.App.Controllers
                 return BadRequest("Player Id must be greater than 0");
             }
 
-            _logger.LogInformation($"Request received to get wagers for player with Id: {playerId}");
+            _logger.LogInformation(message: $"Request received to get wagers for player with Id: {playerId}");
 
             return Ok(await _casinoWagerService.GetCasinoWagersAsync(playerId));
         }
@@ -69,7 +76,7 @@ namespace OT.Assessment.App.Controllers
                 return BadRequest("Count must be greater than 0");
             }
 
-            _logger.LogInformation($"Request received to get top {count} highest spenders");
+            _logger.LogInformation(message: $"Request received to get top {count} highest spenders");
 
             return Ok(await _playerService.GetTopSpendersAsync(count));
         }
