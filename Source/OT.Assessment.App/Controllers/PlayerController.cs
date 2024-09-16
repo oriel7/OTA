@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OT.Assessment.Core.Domain.Models;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Mvc;
+using OT.Assessment.Core.Domain.Constants;
+using OT.Assessment.Core.Domain.DTO;
 using OT.Assessment.Core.Services.Services;
 namespace OT.Assessment.App.Controllers
 {
@@ -9,13 +11,20 @@ namespace OT.Assessment.App.Controllers
     public class PlayerController : ControllerBase
     {
         private readonly ILogger<PlayerController> _logger;
-        private readonly ICasinoWagerService _casinoWagerService;
-        private readonly IPlayerService _playerService;
+        private readonly IBus _bus;
+        private readonly IRequestClient<PlayerData> _playerClient;
+        private readonly IRequestClient<TopSpenderData> _spenderClient;
+        private readonly IPlayerCasinoWagerService _playerCasinoWagerService;
 
-        public PlayerController(ICasinoWagerService casinoWagerService, IPlayerService playerService, ILogger<PlayerController> logger)
+
+        public PlayerController(IBus bus, IRequestClient<PlayerData> playerClient,
+            IRequestClient<TopSpenderData> spenderClient, IPlayerCasinoWagerService playerCasinoWagerService,
+            ILogger<PlayerController> logger)
         {
-            _casinoWagerService = casinoWagerService;
-            _playerService = playerService; 
+            _bus = bus;
+            _spenderClient = spenderClient;
+            _playerClient = playerClient;
+            _playerCasinoWagerService = playerCasinoWagerService;
             _logger = logger;
         }
 
@@ -23,37 +32,60 @@ namespace OT.Assessment.App.Controllers
 
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public async Task<ActionResult> CasinoWager(CasinoWager casinoWager)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> CasinoWager(CasinoWagerDTO casinoWager)
         {
             if (casinoWager == null)
             {
                 return BadRequest("Casino wager data is missing");
             }
 
+            //if (string.IsNullOrEmpty(casinoWager.WagerId))
+            //{
+            //    return BadRequest("Casino wager Id is missing");
+            //}
+
+            if (string.IsNullOrEmpty(casinoWager.GameName))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
+            if (string.IsNullOrEmpty(casinoWager.Provider))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
+            //if (string.IsNullOrEmpty(casinoWager.AccountId))
+            //{
+            //    return BadRequest("Casino wager Id is missing");
+            //}
+
             _logger.LogInformation("Request received to create a wager");
 
-            await _casinoWagerService.CreateCasinoWagerAsync(casinoWager);
+            var endPoint = await _bus.GetSendEndpoint(new Uri(RabbitMqConstants.RabbitMqCreateCasinoWagerQueueUri));
+            await endPoint.Send(casinoWager);
 
-            return NoContent();
+            return Ok("Casino wager created successfully");
         }
 
         //GET api/player/{playerId}/wagers
         [HttpGet]
-        [Route("{playerId:int}/wagers")]
+        [Route("{playerId:Guid}/wagers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<CasinoWager>>> Wagers(int playerId)
+        public async Task<ActionResult<IEnumerable<CasinoWagerResponseDTO>>> Wagers(Guid playerId)
         {
-            if (playerId < 1)
-            {
-                return BadRequest("Player Id must be greater than 0");
-            }
+            //if (string.IsNullOrEmpty(playerId))
+            //{
+            //    return BadRequest("Player Id is missing");
+            //}
 
-            _logger.LogInformation($"Request received to get wagers for player with Id: {playerId}");
+            _logger.LogInformation(message: $"Request received to get wagers for player with Id: {playerId}");
 
-            return Ok(await _casinoWagerService.GetCasinoWagersAsync(playerId));
+            var response = await _playerCasinoWagerService.GetCasinoWagersAsync(playerId);
+
+            return Ok(response);
         }
 
         //GET api/player/topSpenders?count=10        
@@ -62,16 +94,19 @@ namespace OT.Assessment.App.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<Player>>> TopSpenders(int count = 10)
+        public async Task<ActionResult<IEnumerable<PlayerDTO>>> TopSpenders(int count = 10)
         {
             if (count < 1)
             {
                 return BadRequest("Count must be greater than 0");
             }
 
-            _logger.LogInformation($"Request received to get top {count} highest spenders");
+            _logger.LogInformation(message: $"Request received to get top {count} highest spenders");
 
-            return Ok(await _playerService.GetTopSpendersAsync(count));
+            var request = _spenderClient.Create(new TopSpenderData { Count = count });
+            var response = await request.GetResponse<IEnumerable<PlayerDTO>>();
+
+            return Ok(response);
         }
     }
 }

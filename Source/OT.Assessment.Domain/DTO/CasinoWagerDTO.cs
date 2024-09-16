@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OT.Assessment.Core.Domain.Models
+﻿
+namespace OT.Assessment.Core.Domain.DTO
 {
-    public class CasinoWager
+    public class CasinoWagerDTO
     {
-        public string WagerId { get; set; }
+        public Guid WagerId { get; set; }
         public string Theme { get; set; }
         public string Provider { get; set; }
         public string GameName { get; set; }
         public string TransactionId { get; set; }
         public string BrandId { get; set; }
-        public string AccountId { get; set; }
+        public Guid AccountId { get; set; }
         public string Username { get; set; }
         public string ExternalReferenceId { get; set; }
         public string TransactionTypeId { get; set; }

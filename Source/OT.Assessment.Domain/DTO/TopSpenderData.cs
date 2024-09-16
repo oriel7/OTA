@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OT.Assessment.Infrastructure.Persistence.Contexts
+namespace OT.Assessment.Core.Domain.DTO
 {
-    public class AppDbContext //: DbContext
+    public class TopSpenderData
     {
-
+        public int Count { get; set; }
     }
 }

@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Consumers\CreateCasinoWagerConsumer.cs~RF50aeced.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" Version="8.2.5" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Serilog" Version="4.0.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OT.Assessment.Core.Repository\OT.Assessment.Core.Repository.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Core.Services\OT.Assessment.Core.Services.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Domain\OT.Assessment.Core.Domain.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Infrastructure.Persistence\OT.Assessment.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Infrastructure.Repository\OT.Assessment.Infrastructure.Repository.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Infrastructure.Service\OT.Assessment.Infrastructure.Service.csproj" />
+  </ItemGroup>
+
+</Project>

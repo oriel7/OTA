@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OT.Assessment.Core.Repository\OT.Assessment.Core.Repository.csproj" />
     <ProjectReference Include="..\OT.Assessment.Core.Services\OT.Assessment.Core.Services.csproj" />
     <ProjectReference Include="..\OT.Assessment.Domain\OT.Assessment.Core.Domain.csproj" />
   </ItemGroup>

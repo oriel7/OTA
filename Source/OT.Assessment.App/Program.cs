@@ -1,4 +1,12 @@
+using Dapper;
+using MassTransit;
+using OT.Assessment.Core.Domain.Constants;
+using OT.Assessment.Core.Domain.DTO;
+using OT.Assessment.Core.Repository.Repositories;
 using OT.Assessment.Core.Services.Services;
+using OT.Assessment.Infrastructure.Persistence.Contexts;
+using OT.Assessment.Infrastructure.Persistence.Handler;
+using OT.Assessment.Infrastructure.Repository.Repositories;
 using OT.Assessment.Infrastructure.Service.Services;
 using Serilog;
 using System.Reflection;
@@ -6,17 +14,15 @@ using System.Reflection;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-});
+SetupSwagger(builder);
 
-builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
-builder.Services.AddScoped<IPlayerService, PlayerService>();
+//SqlMapper.AddTypeHandler(new DapperGuidTypeHandler());
+//SqlMapper.RemoveTypeMap(typeof(Guid));
+//SqlMapper.RemoveTypeMap(typeof(Guid?));
+
+SetServiceDependencies(builder);
+
+SetMassTransit(builder);
 
 //Add support to logging with SERILOG
 builder.Host.UseSerilog((context, configuration) =>
@@ -46,3 +52,48 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void SetupSwagger(WebApplicationBuilder builder)
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(options =>
+    {
+        var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    });
+}
+
+static void SetServiceDependencies(WebApplicationBuilder builder)
+{
+    builder.Services.AddSingleton<DapperContext>();
+    builder.Services.AddScoped<IPlayerCasinoWagerRepository, PlayerCasinoWagerRepository>();
+    builder.Services.AddScoped<IPlayerCasinoWagerService, PlayerCasinoWagerService>();
+    builder.Services.AddScoped<IPlayerService, PlayerService>();
+}
+
+static void SetMassTransit(WebApplicationBuilder builder)
+{
+    builder.Services.AddMassTransit(busConfigurator =>
+    {
+        busConfigurator.AddRequestClient<PlayerData>();
+        busConfigurator.AddRequestClient<TopSpenderData>();
+
+        busConfigurator.UsingRabbitMq((context, configurator) =>
+        {
+            //configurator.Host(new Uri(builder.Configuration["MessageBroker.Host"]!), h =>
+            //{
+            //    h.Username(builder.Configuration["MessageBroker.Username"]);
+            //    h.Password(builder.Configuration["MessageBroker.Password"]);
+            //});
+
+            configurator.Host(new Uri(RabbitMqConstants.RabbitMqRootUri), h =>
+            {
+                h.Username(RabbitMqConstants.UserName);
+                h.Password(RabbitMqConstants.Password);
+            });
+
+            configurator.ConfigureEndpoints(context);
+        });
+    });
+}
