@@ -21,5 +21,10 @@ namespace OT.Assessment.Infrastructure.Service.Services
         {
             return await _playerCasinoWagerRepository.GetCasinoWagerAsync(playerId);
         }
+
+        public async Task<IEnumerable<TopSpenderDTO>> GetTopSpendersAsync(int count)
+        {
+            return await _playerCasinoWagerRepository.GetTopSpendersAsync(count);
+        }
     }
 }

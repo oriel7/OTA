@@ -6,5 +6,6 @@ namespace OT.Assessment.Core.Repository.Repositories
     {
         Task CreateCasinoWagerAsync(CasinoWagerDTO casinoWager);
         Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagerAsync(Guid playerId);
+        Task<IEnumerable<TopSpenderDTO>> GetTopSpendersAsync(int count);
     }
 }

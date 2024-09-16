@@ -12,18 +12,13 @@ namespace OT.Assessment.App.Controllers
     {
         private readonly ILogger<PlayerController> _logger;
         private readonly IBus _bus;
-        private readonly IRequestClient<PlayerData> _playerClient;
-        private readonly IRequestClient<TopSpenderData> _spenderClient;
         private readonly IPlayerCasinoWagerService _playerCasinoWagerService;
 
 
-        public PlayerController(IBus bus, IRequestClient<PlayerData> playerClient,
-            IRequestClient<TopSpenderData> spenderClient, IPlayerCasinoWagerService playerCasinoWagerService,
+        public PlayerController(IBus bus, IPlayerCasinoWagerService playerCasinoWagerService,
             ILogger<PlayerController> logger)
         {
             _bus = bus;
-            _spenderClient = spenderClient;
-            _playerClient = playerClient;
             _playerCasinoWagerService = playerCasinoWagerService;
             _logger = logger;
         }
@@ -62,7 +57,7 @@ namespace OT.Assessment.App.Controllers
 
             _logger.LogInformation("Request received to create a wager");
 
-            var endPoint = await _bus.GetSendEndpoint(new Uri(RabbitMqConstants.RabbitMqCreateCasinoWagerQueueUri));
+            var endPoint = await _bus.GetSendEndpoint(new Uri(RabbitMqConstants.CreateCasinoWagerQueueUri));
             await endPoint.Send(casinoWager);
 
             return Ok("Casino wager created successfully");
@@ -103,8 +98,7 @@ namespace OT.Assessment.App.Controllers
 
             _logger.LogInformation(message: $"Request received to get top {count} highest spenders");
 
-            var request = _spenderClient.Create(new TopSpenderData { Count = count });
-            var response = await request.GetResponse<IEnumerable<PlayerDTO>>();
+            var response = await _playerCasinoWagerService.GetTopSpendersAsync(count);
 
             return Ok(response);
         }

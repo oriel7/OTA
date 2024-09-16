@@ -5,6 +5,7 @@ namespace OT.Assessment.Core.Services.Services
     public interface IPlayerCasinoWagerService
     {
         Task CreateCasinoWagerAsync(CasinoWagerDTO casinoWager);
-         Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagersAsync(Guid playerId);
+        Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagersAsync(Guid playerId);
+        Task<IEnumerable<TopSpenderDTO>> GetTopSpendersAsync(int count);
     }
 }

@@ -14,7 +14,7 @@ namespace OT.Assessment.Infrastructure.Repository.Repositories
 
         public async Task CreateCasinoWagerAsync(CasinoWagerDTO casinoWager)
         {
-            var insertQuery = "INSERT INTO PlayerCasinoWager (WagerId, Game, Provider, AccountId, Amount, CreatedDateTime) " +
+            var insertQuery = "INSERT INTO datPlayerCasinoWager (WagerId, Game, Provider, AccountId, Amount, CreatedDateTime) " +
                 "VALUES (@WagerId, @Game, @Provider, @AccountId, @Amount, @CreatedDateTime)";
 
             using (var connection = _context.CreateConnection())
@@ -35,7 +35,7 @@ namespace OT.Assessment.Infrastructure.Repository.Repositories
 
         public async Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagerAsync(Guid playerId)
         {
-            var query = "SELECT WagerId, Game, Provider, Amount, CreatedDateTime FROM PlayerCasinoWager WHERE AccountId = @AccountId";
+            var query = "SELECT WagerId, Game, Provider, Amount, CreatedDateTime FROM datPlayerCasinoWager WITH(NOLOCK) WHERE AccountId = @AccountId";
 
             using (var connection = _context.CreateConnection())
             {
@@ -49,6 +49,26 @@ namespace OT.Assessment.Infrastructure.Repository.Repositories
                     Amount = wager.Amount,
                     CreatedDateTime = wager.CreatedDateTime
                 }); 
+            }
+        }
+
+        public async Task<IEnumerable<TopSpenderDTO>> GetTopSpendersAsync(int count)
+        {
+            var query = "EXEC usp_GetTopSpenders @Count";
+            var values = new { Count = count };
+
+            using (var connection = _context.CreateConnection())
+            {
+                var results = connection.Query(query, values).ToList();
+
+                await Task.CompletedTask;
+
+                return results.Select(topSpender => new TopSpenderDTO()
+                {
+                    AccountId = topSpender.AccountId,
+                    UserName = topSpender.UserName,
+                    TotalAmountSpend = (double)topSpender.TotalAmountSpend,
+                });
             }
         }
     }

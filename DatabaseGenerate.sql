@@ -1,0 +1,153 @@
+USE [master]
+GO
+/****** Object:  Database [OT_Assessment_DB]    Script Date: 2024/09/17 01:36:17 ******/
+CREATE DATABASE [OT_Assessment_DB]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'OT_Assessment_DB', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\OT_Assessment_DB.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'OT_Assessment_DB_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\OT_Assessment_DB_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
+ALTER DATABASE [OT_Assessment_DB] SET COMPATIBILITY_LEVEL = 150
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [OT_Assessment_DB].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET  DISABLE_BROKER 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET RECOVERY FULL 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET  MULTI_USER 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [OT_Assessment_DB] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [OT_Assessment_DB] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+EXEC sys.sp_db_vardecimal_storage_format N'OT_Assessment_DB', N'ON'
+GO
+ALTER DATABASE [OT_Assessment_DB] SET QUERY_STORE = OFF
+GO
+USE [OT_Assessment_DB]
+GO
+/****** Object:  Table [dbo].[datPlayerAccount]    Script Date: 2024/09/17 01:36:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[datPlayerAccount](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[AccountId] [uniqueidentifier] NOT NULL,
+	[Username] [nvarchar](50) NOT NULL,
+	[IsActive] [bit] NOT NULL,
+	[CreateDate] [datetime] NOT NULL,
+	[ModifyDate] [datetime] NOT NULL,
+ CONSTRAINT [PK_datPlayerAccount] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[datPlayerCasinoWager]    Script Date: 2024/09/17 01:36:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[datPlayerCasinoWager](
+	[Id] [bigint] IDENTITY(1,1) NOT NULL,
+	[WagerId] [uniqueidentifier] NOT NULL,
+	[Game] [nvarchar](200) NOT NULL,
+	[Provider] [nvarchar](100) NOT NULL,
+	[AccountId] [uniqueidentifier] NOT NULL,
+	[Amount] [decimal](19, 4) NOT NULL,
+	[CreatedDateTime] [datetime] NOT NULL,
+ CONSTRAINT [PK_PlayerCasinoWager] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  StoredProcedure [dbo].[usp_GetTopSpenders]    Script Date: 2024/09/17 01:36:20 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE [dbo].[usp_GetTopSpenders]
+	@Count int
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    SELECT	TOP (@Count) a.AccountId, 
+			a.UserName, 
+			SUM(b.Amount) AS TotalAmountSpend
+	FROM	datPlayerAccount a WITH(NOLOCK)
+            JOIN datPlayerCasinoWager b WITH(NOLOCK) ON a.AccountId = b.AccountId
+	GROUP BY a.AccountId, a.UserName
+    ORDER BY 3 DESC
+
+END
+GO
+USE [master]
+GO
+ALTER DATABASE [OT_Assessment_DB] SET  READ_WRITE 
+GO

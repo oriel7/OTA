@@ -69,25 +69,15 @@ static void SetServiceDependencies(WebApplicationBuilder builder)
     builder.Services.AddSingleton<DapperContext>();
     builder.Services.AddScoped<IPlayerCasinoWagerRepository, PlayerCasinoWagerRepository>();
     builder.Services.AddScoped<IPlayerCasinoWagerService, PlayerCasinoWagerService>();
-    builder.Services.AddScoped<IPlayerService, PlayerService>();
 }
 
 static void SetMassTransit(WebApplicationBuilder builder)
 {
     builder.Services.AddMassTransit(busConfigurator =>
     {
-        busConfigurator.AddRequestClient<PlayerData>();
-        busConfigurator.AddRequestClient<TopSpenderData>();
-
         busConfigurator.UsingRabbitMq((context, configurator) =>
         {
-            //configurator.Host(new Uri(builder.Configuration["MessageBroker.Host"]!), h =>
-            //{
-            //    h.Username(builder.Configuration["MessageBroker.Username"]);
-            //    h.Password(builder.Configuration["MessageBroker.Password"]);
-            //});
-
-            configurator.Host(new Uri(RabbitMqConstants.RabbitMqRootUri), h =>
+            configurator.Host(new Uri(RabbitMqConstants.RootUri), h =>
             {
                 h.Username(RabbitMqConstants.UserName);
                 h.Password(RabbitMqConstants.Password);
