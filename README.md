@@ -22,5 +22,6 @@ Step 2: Call post method
 
 Output
 
+![image](https://github.com/user-attachments/assets/c02dc5b6-7e19-431c-b636-7abc9fb04593)
 
 
