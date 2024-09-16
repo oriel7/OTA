@@ -1,10 +1,5 @@
 ﻿using MassTransit;
 using OT.Assessment.Core.Domain.DTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OT.Assessment.MyConsumer.Consumers
 {
@@ -21,7 +16,7 @@ namespace OT.Assessment.MyConsumer.Consumers
         {
             var data = context.Message;
 
-            var response = new List<CasinoWagerDTO>();
+            var response = new List<CasinoWagerResponseDTO>();
 
             await context.RespondAsync(response);
         }

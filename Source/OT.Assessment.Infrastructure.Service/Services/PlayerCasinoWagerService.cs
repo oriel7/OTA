@@ -12,16 +12,14 @@ namespace OT.Assessment.Infrastructure.Service.Services
             _playerCasinoWagerRepository = playerCasinoWagerRepository;
         }
 
-        //public async Task<IEnumerable<CasinoWager>> GetCasinoWagersAsync(int playerId)
-        //{
-        //    await Task.CompletedTask;
-
-        //    throw new NotImplementedException();
-        //}
-
         public async Task CreateCasinoWagerAsync(CasinoWagerDTO casinoWager)
         {
             await _playerCasinoWagerRepository.CreateCasinoWagerAsync(casinoWager);
+        }
+
+        public async Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagersAsync(Guid playerId)
+        {
+            return await _playerCasinoWagerRepository.GetCasinoWagerAsync(playerId);
         }
     }
 }

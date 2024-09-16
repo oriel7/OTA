@@ -32,5 +32,24 @@ namespace OT.Assessment.Infrastructure.Repository.Repositories
                 await connection.ExecuteAsync(insertQuery, wager);
             }       
         }
+
+        public async Task<IEnumerable<CasinoWagerResponseDTO>> GetCasinoWagerAsync(Guid playerId)
+        {
+            var query = "SELECT WagerId, Game, Provider, Amount, CreatedDateTime FROM PlayerCasinoWager WHERE AccountId = @AccountId";
+
+            using (var connection = _context.CreateConnection())
+            {
+                var wagers = await connection.QueryAsync<PlayerCasinoWager>(query, new { AccountId = playerId });
+
+                return wagers.Select(wager => new CasinoWagerResponseDTO()
+                {
+                    WagerId = wager.WagerId,
+                    GameName = wager.Game,
+                    Provider = wager.Provider,
+                    Amount = wager.Amount,
+                    CreatedDateTime = wager.CreatedDateTime
+                }); 
+            }
+        }
     }
 }

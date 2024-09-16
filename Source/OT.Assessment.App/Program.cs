@@ -1,6 +1,13 @@
+using Dapper;
 using MassTransit;
 using OT.Assessment.Core.Domain.Constants;
 using OT.Assessment.Core.Domain.DTO;
+using OT.Assessment.Core.Repository.Repositories;
+using OT.Assessment.Core.Services.Services;
+using OT.Assessment.Infrastructure.Persistence.Contexts;
+using OT.Assessment.Infrastructure.Persistence.Handler;
+using OT.Assessment.Infrastructure.Repository.Repositories;
+using OT.Assessment.Infrastructure.Service.Services;
 using Serilog;
 using System.Reflection;
 
@@ -8,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 SetupSwagger(builder);
+
+//SqlMapper.AddTypeHandler(new DapperGuidTypeHandler());
+//SqlMapper.RemoveTypeMap(typeof(Guid));
+//SqlMapper.RemoveTypeMap(typeof(Guid?));
+
+SetServiceDependencies(builder);
 
 SetMassTransit(builder);
 
@@ -49,6 +62,14 @@ static void SetupSwagger(WebApplicationBuilder builder)
         var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
         options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
     });
+}
+
+static void SetServiceDependencies(WebApplicationBuilder builder)
+{
+    builder.Services.AddSingleton<DapperContext>();
+    builder.Services.AddScoped<IPlayerCasinoWagerRepository, PlayerCasinoWagerRepository>();
+    builder.Services.AddScoped<IPlayerCasinoWagerService, PlayerCasinoWagerService>();
+    builder.Services.AddScoped<IPlayerService, PlayerService>();
 }
 
 static void SetMassTransit(WebApplicationBuilder builder)

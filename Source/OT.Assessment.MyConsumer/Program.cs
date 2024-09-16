@@ -32,9 +32,6 @@ app.Run();
 
 static void SetServiceDependencies(WebApplicationBuilder builder)
 {
-    builder.Services.AddSingleton<DapperContext>();
-    builder.Services.AddScoped<IPlayerCasinoWagerRepository, PlayerCasinoWagerRepository>();
-    builder.Services.AddScoped<IPlayerCasinoWagerService, PlayerCasinoWagerService>();
     builder.Services.AddScoped<IPlayerService, PlayerService>();
 }
 

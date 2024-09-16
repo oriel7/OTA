@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OT.Assessment.Core.Domain.Constants;
 using OT.Assessment.Core.Domain.DTO;
-using OT.Assessment.Core.Domain.Models;
 using OT.Assessment.Core.Services.Services;
 namespace OT.Assessment.App.Controllers
 {
@@ -15,14 +14,17 @@ namespace OT.Assessment.App.Controllers
         private readonly IBus _bus;
         private readonly IRequestClient<PlayerData> _playerClient;
         private readonly IRequestClient<TopSpenderData> _spenderClient;
+        private readonly IPlayerCasinoWagerService _playerCasinoWagerService;
 
 
         public PlayerController(IBus bus, IRequestClient<PlayerData> playerClient,
-            IRequestClient<TopSpenderData> spenderClient, ILogger<PlayerController> logger)
+            IRequestClient<TopSpenderData> spenderClient, IPlayerCasinoWagerService playerCasinoWagerService,
+            ILogger<PlayerController> logger)
         {
             _bus = bus;
             _spenderClient = spenderClient;
             _playerClient = playerClient;
+            _playerCasinoWagerService = playerCasinoWagerService;
             _logger = logger;
         }
 
@@ -38,10 +40,10 @@ namespace OT.Assessment.App.Controllers
                 return BadRequest("Casino wager data is missing");
             }
 
-            if (string.IsNullOrEmpty(casinoWager.WagerId))
-            {
-                return BadRequest("Casino wager Id is missing");
-            }
+            //if (string.IsNullOrEmpty(casinoWager.WagerId))
+            //{
+            //    return BadRequest("Casino wager Id is missing");
+            //}
 
             if (string.IsNullOrEmpty(casinoWager.GameName))
             {
@@ -53,10 +55,10 @@ namespace OT.Assessment.App.Controllers
                 return BadRequest("Casino wager Id is missing");
             }
 
-            if (string.IsNullOrEmpty(casinoWager.AccountId))
-            {
-                return BadRequest("Casino wager Id is missing");
-            }
+            //if (string.IsNullOrEmpty(casinoWager.AccountId))
+            //{
+            //    return BadRequest("Casino wager Id is missing");
+            //}
 
             _logger.LogInformation("Request received to create a wager");
 
@@ -68,21 +70,20 @@ namespace OT.Assessment.App.Controllers
 
         //GET api/player/{playerId}/wagers
         [HttpGet]
-        [Route("{playerId:int}/wagers")]
+        [Route("{playerId:Guid}/wagers")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IEnumerable<CasinoWagerDTO>>> Wagers(int playerId)
+        public async Task<ActionResult<IEnumerable<CasinoWagerResponseDTO>>> Wagers(Guid playerId)
         {
-            if (playerId < 1)
-            {
-                return BadRequest("Player Id must be greater than 0");
-            }
+            //if (string.IsNullOrEmpty(playerId))
+            //{
+            //    return BadRequest("Player Id is missing");
+            //}
 
             _logger.LogInformation(message: $"Request received to get wagers for player with Id: {playerId}");
 
-            var request = _playerClient.Create(new PlayerData { PlayerId = playerId });
-            var response = await request.GetResponse<IEnumerable<CasinoWagerDTO>>();
+            var response = await _playerCasinoWagerService.GetCasinoWagersAsync(playerId);
 
             return Ok(response);
         }
