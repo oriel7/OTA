@@ -6,4 +6,13 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Serilog" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OT.Assessment.Core.Repository\OT.Assessment.Core.Repository.csproj" />
+    <ProjectReference Include="..\OT.Assessment.Infrastructure.Persistence\OT.Assessment.Infrastructure.Persistence.csproj" />
+  </ItemGroup>
+
 </Project>

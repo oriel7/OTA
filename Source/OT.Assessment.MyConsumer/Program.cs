@@ -2,7 +2,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using OT.Assessment.Core.Domain.Constants;
+using OT.Assessment.Core.Repository.Repositories;
 using OT.Assessment.Core.Services.Services;
+using OT.Assessment.Infrastructure.Persistence.Contexts;
+using OT.Assessment.Infrastructure.Repository.Repositories;
 using OT.Assessment.Infrastructure.Service.Services;
 using OT.Assessment.MyConsumer.Consumers;
 using Serilog;
@@ -29,7 +32,9 @@ app.Run();
 
 static void SetServiceDependencies(WebApplicationBuilder builder)
 {
-    builder.Services.AddScoped<ICasinoWagerService, CasinoWagerService>();
+    builder.Services.AddSingleton<DapperContext>();
+    builder.Services.AddScoped<IPlayerCasinoWagerRepository, PlayerCasinoWagerRepository>();
+    builder.Services.AddScoped<IPlayerCasinoWagerService, PlayerCasinoWagerService>();
     builder.Services.AddScoped<IPlayerService, PlayerService>();
 }
 

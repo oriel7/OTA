@@ -38,6 +38,26 @@ namespace OT.Assessment.App.Controllers
                 return BadRequest("Casino wager data is missing");
             }
 
+            if (string.IsNullOrEmpty(casinoWager.WagerId))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
+            if (string.IsNullOrEmpty(casinoWager.GameName))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
+            if (string.IsNullOrEmpty(casinoWager.Provider))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
+            if (string.IsNullOrEmpty(casinoWager.AccountId))
+            {
+                return BadRequest("Casino wager Id is missing");
+            }
+
             _logger.LogInformation("Request received to create a wager");
 
             var endPoint = await _bus.GetSendEndpoint(new Uri(RabbitMqConstants.RabbitMqCreateCasinoWagerQueueUri));
